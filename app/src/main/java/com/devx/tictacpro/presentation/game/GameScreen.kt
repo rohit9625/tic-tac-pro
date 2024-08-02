@@ -1,4 +1,4 @@
-package com.devx.tictacpro.presentation
+package com.devx.tictacpro.presentation.game
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -8,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,23 +26,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.devx.tictacpro.R
+import com.devx.tictacpro.presentation.CircleIcon
+import com.devx.tictacpro.presentation.CrossIcon
+import com.devx.tictacpro.presentation.GameState
+import com.devx.tictacpro.presentation.Player
+import com.devx.tictacpro.presentation.PlayerAvatar
+import com.devx.tictacpro.presentation.ResultDialog
 import com.devx.tictacpro.ui.theme.TicTacProTheme
 import kotlinx.coroutines.launch
 

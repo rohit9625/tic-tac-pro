@@ -1,7 +1,6 @@
-package com.devx.tictacpro.presentation
+package com.devx.tictacpro.presentation.home
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,12 +32,32 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.devx.tictacpro.R
+import com.devx.tictacpro.Route
+import com.devx.tictacpro.TicTacProApp
+import com.devx.tictacpro.presentation.PlayersDialog
 import com.devx.tictacpro.ui.theme.TicTacProTheme
 
+
+@Composable
+fun HomeScreen(navController: NavController) {
+    val viewModel = viewModel<HomeViewModel>{
+        HomeViewModel(TicTacProApp.appModule.authRepository)
+    }
+    HomeScreen(
+        onEvent = viewModel::onEvent,
+        navController = navController
+    )
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onEvent: (HomeEvent)-> Unit,
+    navController: NavController
+) {
     var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -62,7 +81,11 @@ fun HomeScreen() {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = {
+                        onEvent(HomeEvent.OnLogout{
+                            navController.navigate(Route.AuthScreen)
+                        })
+                    }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_round_logout),
                             contentDescription = "Logout",
@@ -79,12 +102,6 @@ fun HomeScreen() {
         Box(modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize()) {
-            Image(
-                painter = painterResource(R.drawable.bg_plane_tic_tac_pro_png),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -97,8 +114,8 @@ fun HomeScreen() {
                     style = MaterialTheme.typography.displaySmall
                 )
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Button(onClick = { /*TODO*/ }) {
                         Text(text = "Play Online")
@@ -122,6 +139,9 @@ fun HomeScreen() {
 @Composable
 private fun HomeScreenPreview() {
     TicTacProTheme {
-        HomeScreen()
+        HomeScreen(
+            onEvent = {},
+            navController = rememberNavController()
+        )
     }
 }
