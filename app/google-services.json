@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "291354007828",
+    "project_id": "tic-tac-pro-a4c30",
+    "storage_bucket": "tic-tac-pro-a4c30.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:291354007828:android:ad0ba00e59350ecd57ca01",
+        "android_client_info": {
+          "package_name": "com.devx.tictacpro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAulJilDSAV_NWvBcvdKkPpRKqZUPgHia8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
