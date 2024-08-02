@@ -14,7 +14,17 @@ class AuthViewModel(
     private val _uiState = MutableStateFlow(AuthState())
     val uiState = _uiState.asStateFlow()
 
-    fun loginAsGuest(onSuccess: ()-> Unit) {
+
+    fun onEvent(e: AuthEvent) {
+        when(e) {
+            is AuthEvent.OnEmailChange -> _uiState.update { it.copy(email = e.email) }
+            is AuthEvent.OnPasswordChange -> _uiState.update { it.copy(password = e.password)}
+            is AuthEvent.OnGuestLogin -> loginAsGuest()
+            is AuthEvent.OnSubmit -> TODO("Not Implemented")
+        }
+    }
+
+    private fun loginAsGuest() {
         _uiState.update { it.copy(isLoading = true) }
 
         val error = when(val res = authRepository.loginAsGuest()) {
@@ -25,7 +35,6 @@ class AuthViewModel(
             }
 
             is Result.Success -> {
-                onSuccess()
                 null
             }
         }
