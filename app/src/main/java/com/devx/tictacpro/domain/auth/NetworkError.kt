@@ -1,7 +1,14 @@
 package com.devx.tictacpro.domain.auth
 
-enum class NetworkError : Error{
-    NO_INTERNET,
-    UNKNOWN,
-    TOO_MANY_REQUEST
+sealed interface NetworkError : Error{
+    enum class AuthError: NetworkError {
+        INVALID_CREDENTIALS,
+        WEAK_PASSWORD,
+        EMPTY_FIELDS,
+        USER_ALREADY_EXISTS,
+        CONNECTION_ERROR,
+        SERVER_ERROR,
+        TOO_MANY_REQUEST,
+        ERROR_UNKNOWN
+    }
 }

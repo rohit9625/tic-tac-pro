@@ -2,6 +2,7 @@ package com.devx.tictacpro.presentation.auth
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.devx.tictacpro.R
+import com.devx.tictacpro.Route
 import com.devx.tictacpro.presentation.components.AuthTextField
 import com.devx.tictacpro.presentation.components.PasswordTextField
 import com.devx.tictacpro.presentation.components.TriangleShape
@@ -51,10 +53,9 @@ fun AuthScreen(
     onEvent: (AuthEvent)-> Unit,
     navController: NavController
 ) {
-    val snackHostState = SnackbarHostState()
-    val scope = rememberCoroutineScope()
-
-    Box {
+    Box(
+        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+    ) {
         Image(
             painter = painterResource(R.drawable.bg_tic_tac_pro),
             contentDescription = null,
@@ -83,6 +84,11 @@ fun AuthScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text(
+                    text = state.error ?: "",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
                 AuthTextField(
                     value = state.email,
                     onValueChange = { onEvent(AuthEvent.OnEmailChange(it)) },
@@ -99,14 +105,15 @@ fun AuthScreen(
                 )
 
                 Button(
-                    onClick = { scope.launch {
-                        snackHostState.showSnackbar("Not implemented yet!")
-                    } },
+                    onClick = {
+                        onEvent(AuthEvent.OnSubmit { navController.navigate(Route.HomeScreen) })
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
                     shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
                 ) {
+
                     Text(
                         text = "Let's Go",
                         modifier = Modifier.padding(vertical = 8.dp),
@@ -119,7 +126,11 @@ fun AuthScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "or")
+                Text(
+                    text = "or",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
                 AuthButton(
                     icon = R.drawable.ic_person_24,
                     text = "Continue as Guest",
