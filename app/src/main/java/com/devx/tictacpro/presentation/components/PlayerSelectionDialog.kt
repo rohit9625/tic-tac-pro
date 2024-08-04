@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -44,8 +45,8 @@ fun PlayerSelectionDialog(
             Spacer(modifier = Modifier.height(16.dp))
             PlayerSelection(
                 player = firstPlayer,
-                onNameChange = { onNameChange(firstPlayer.id, it) },
-                onSelectTurn = { onTurnSelect(firstPlayer.id, it) },
+                onNameChange = onNameChange,
+                onTurnSelect = onTurnSelect,
                 modifier = Modifier.padding(16.dp)
             )
 
@@ -53,8 +54,8 @@ fun PlayerSelectionDialog(
 
             PlayerSelection(
                 player = secondPlayer,
-                onNameChange = { onNameChange(secondPlayer.id, it) },
-                onSelectTurn = { onTurnSelect(secondPlayer.id, it) },
+                onNameChange = onNameChange,
+                onTurnSelect = onTurnSelect,
                 modifier = Modifier.padding(16.dp)
             )
 
@@ -71,8 +72,8 @@ fun PlayerSelectionDialog(
 @Composable
 fun PlayerSelection(
     player: Player,
-    onNameChange: (String) -> Unit,
-    onSelectTurn: (Char)-> Unit,
+    onNameChange: (id: Int, name: String) -> Unit,
+    onTurnSelect: (id: Int, turn: Char)-> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -92,7 +93,7 @@ fun PlayerSelection(
 
             UnderlinedTextField(
                 value = player.name,
-                onValueChange = onNameChange
+                onValueChange = { onNameChange(player.id, it) }
             )
         }
 
@@ -105,7 +106,7 @@ fun PlayerSelection(
                             .padding(10.dp),
                     )
                 },
-                onClick = { onSelectTurn('O') },
+                onClick = { onTurnSelect(player.id, 'O') },
                 selected = player.turn == 'O'
             )
 
@@ -117,7 +118,7 @@ fun PlayerSelection(
                             .padding(12.dp)
                     )
                 },
-                onClick = { onSelectTurn('X') },
+                onClick = { onTurnSelect(player.id, 'X') },
                 selected = player.turn == 'X'
             )
         }
@@ -130,12 +131,14 @@ private fun PlayerSelectionDialogPreview() {
     val player1 = Player(
         id = 1,
         name = "Player 1",
-        avatar = R.drawable.boy_avatar1
+        avatar = R.drawable.boy_avatar1,
+        turn = 'X'
     )
     val player2 = Player(
         id = 2,
         name = "Player 1",
-        avatar = R.drawable.boy_avatar_2
+        avatar = R.drawable.boy_avatar_2,
+        'O'
     )
     TicTacProTheme {
         PlayerSelectionDialog(

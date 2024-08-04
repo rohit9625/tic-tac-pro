@@ -1,22 +1,30 @@
 package com.devx.tictacpro.presentation.game
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.devx.tictacpro.presentation.GameState
+import com.devx.tictacpro.presentation.Player
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class GameViewModel: ViewModel() {
-    private var _uiState = MutableStateFlow(GameState())
+class GameViewModel(player1: Player, player2: Player): ViewModel() {
+    private var _uiState = MutableStateFlow(GameState(
+        player1 = player1, player2 = player2
+    ))
     val uiState = _uiState.asStateFlow()
-    var isDraw by mutableStateOf(false)
     private var board = _uiState.value.boardValues
 
-    fun updateGame(position: Int) {
+    fun onEvent(e: GameEvent) {
+        when(e) {
+            is GameEvent.UpdateGame -> updateGame(e.position)
+            is GameEvent.ResetGame -> resetBoard()
+            GameEvent.DismissDialog -> {
+                _uiState.update { it.copy(isDraw = false) }
+            }
+        }
+    }
+
+    private fun updateGame(position: Int) {
         if(board[position] != null) {
             return
         }
@@ -47,7 +55,7 @@ class GameViewModel: ViewModel() {
         }
 
         if(checkDraw()) {
-            isDraw = true
+            _uiState.update { it.copy(isDraw = true) }
             _uiState.value.draw++
         }
     }
@@ -72,7 +80,7 @@ class GameViewModel: ViewModel() {
         }
     }
 
-    fun resetBoard() {
+    private fun resetBoard() {
         board = GameState.emptyField()
         _uiState.update { it.copy(boardValues = board, winningPlayer = null) }
     }

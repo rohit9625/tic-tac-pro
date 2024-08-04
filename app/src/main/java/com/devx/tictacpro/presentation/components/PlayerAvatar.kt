@@ -30,7 +30,7 @@ fun PlayerAvatar(
             .clip(shape)
             .border(
                 width = 2.dp,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.tertiary,
                 shape = CircleShape
             ),
         contentScale = ContentScale.Crop

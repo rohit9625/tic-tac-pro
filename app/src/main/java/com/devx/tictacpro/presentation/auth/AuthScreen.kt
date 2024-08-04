@@ -19,13 +19,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -45,7 +42,6 @@ import com.devx.tictacpro.presentation.components.AuthTextField
 import com.devx.tictacpro.presentation.components.PasswordTextField
 import com.devx.tictacpro.presentation.components.TriangleShape
 import com.devx.tictacpro.ui.theme.TicTacProTheme
-import kotlinx.coroutines.launch
 
 @Composable
 fun AuthScreen(
@@ -171,7 +167,7 @@ fun AuthButton(
     }
 }
 
-@PreviewLightDark
+@Preview
 @Composable
 private fun AuthScreenPreview() {
     TicTacProTheme {

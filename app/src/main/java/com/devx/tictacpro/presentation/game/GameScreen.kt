@@ -19,13 +19,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -35,24 +35,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.devx.tictacpro.R
-import com.devx.tictacpro.presentation.CircleIcon
-import com.devx.tictacpro.presentation.CrossIcon
-import com.devx.tictacpro.presentation.GameState
 import com.devx.tictacpro.presentation.Player
-import com.devx.tictacpro.presentation.PlayerAvatar
 import com.devx.tictacpro.presentation.ResultDialog
+import com.devx.tictacpro.presentation.components.CircleIcon
+import com.devx.tictacpro.presentation.components.CrossIcon
+import com.devx.tictacpro.presentation.components.PlayerAvatar
 import com.devx.tictacpro.ui.theme.TicTacProTheme
 import kotlinx.coroutines.launch
 
 @Composable
-fun GameScreen() {
-    val viewModel = viewModel<GameViewModel>()
-    val gameState = viewModel.uiState.collectAsState()
-
+fun GameScreen(
+    gameState: GameState,
+    onEvent: (GameEvent)-> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -69,7 +68,7 @@ fun GameScreen() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             PlayerStatus(
-                player = gameState.value.player1
+                player = gameState.player1
             )
 
             Column(
@@ -81,14 +80,14 @@ fun GameScreen() {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "${gameState.value.draw}",
+                    text = "${gameState.draw}",
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
             PlayerStatus(
-                player = gameState.value.player2
+                player = gameState.player2
             )
         }
 
@@ -97,9 +96,10 @@ fun GameScreen() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TurnIndicator(
-                turn = gameState.value.playerAtTurn,
+                turn = gameState.playerAtTurn,
                 strokeWidth = 8.dp,
-                innerPadding = 16.dp
+                innerPadding = 16.dp,
+                borderWidth = 2.dp
             )
             Text(
                 text = "Turn",
@@ -109,21 +109,21 @@ fun GameScreen() {
         }
 
         TicTacToeField(
-            state = gameState.value,
-            onTap = { viewModel.updateGame(it) },
+            state = gameState,
+            onTap = { onEvent(GameEvent.UpdateGame(it)) },
             modifier = Modifier
                 .padding(32.dp)
         )
 
         Button(
-            onClick = { viewModel.resetBoard() },
+            onClick = { onEvent(GameEvent.ResetGame) },
             modifier = Modifier.padding(bottom = 32.dp)
         ) {
             Text(text = "Retry")
         }
     }
 
-    if(gameState.value.winningPlayer != null) {
+    if(gameState.winningPlayer != null) {
         ResultDialog(
             icon = {
                 PlayerAvatar(
@@ -134,12 +134,12 @@ fun GameScreen() {
             },
             message = "Winner!!",
             supportingText = "Player 1",
-            onDismiss = { viewModel.resetBoard() },
-            onConfirm = { viewModel.resetBoard() }
+            onDismiss = { onEvent(GameEvent.ResetGame) },
+            onConfirm = { onEvent(GameEvent.ResetGame) }
         )
     }
 
-    if(viewModel.isDraw) {
+    if(gameState.isDraw) {
         ResultDialog(
             icon = {
                 PlayerAvatar(
@@ -150,11 +150,8 @@ fun GameScreen() {
             },
             supportingText = "It's a",
             message = "Draw",
-            onDismiss = {
-                viewModel.isDraw = false
-                viewModel.resetBoard()
-            },
-            onConfirm = { viewModel.resetBoard() }
+            onDismiss = { onEvent(GameEvent.DismissDialog) },
+            onConfirm = { onEvent(GameEvent.ResetGame) }
         )
     }
 }
@@ -197,13 +194,14 @@ fun TurnIndicator(
     turn: Char?,
     modifier: Modifier = Modifier,
     innerPadding: Dp = 12.dp,
-    strokeWidth: Dp = 4.dp
+    strokeWidth: Dp = 4.dp,
+    borderWidth: Dp = 1.dp
 ) {
     Card(
         modifier = modifier.size(64.dp),
-        border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onSecondaryContainer),
+        border = BorderStroke(borderWidth, MaterialTheme.colorScheme.primaryContainer),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
+            containerColor = Color.Transparent
         )
     ) {
         if(turn == 'X') {
@@ -393,10 +391,26 @@ fun AnimatedCircle(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun GameScreenPreview() {
     TicTacProTheme {
-        GameScreen()
+        GameScreen(
+            gameState = GameState(
+                player1 = Player(
+                    id = 1,
+                    name = "Player 1",
+                    turn = 'X',
+                    avatar = R.drawable.boy_avatar1
+                ),
+                player2 = Player(
+                    id = 2,
+                    name = "Player 2",
+                    turn = 'O',
+                    avatar = R.drawable.boy_avatar_2
+                )
+            ),
+            onEvent = {}
+        )
     }
 }
