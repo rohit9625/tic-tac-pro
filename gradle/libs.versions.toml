@@ -13,6 +13,7 @@ googleServices = "4.4.2"
 composeNavigation = "2.8.0-beta06"
 serialization = "1.6.3"
 uiTextGoogleFonts = "1.6.8"
+dataStore = "1.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -37,6 +38,7 @@ google-firebase-realtime = { module = "com.google.firebase:firebase-database" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "composeNavigation" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization"}
 androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "dataStore"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
