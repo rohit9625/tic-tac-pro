@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -29,8 +28,8 @@ import com.devx.tictacpro.ui.theme.TicTacProTheme
 fun PlayerSelectionDialog(
     firstPlayer: Player,
     secondPlayer: Player,
-    onNameChange: (id: Int, name: String) -> Unit,
-    onTurnSelect: (id: Int, turn: Char)-> Unit,
+    onNameChange: (id: String, name: String) -> Unit,
+    onTurnSelect: (id: String, turn: String)-> Unit,
     onDismiss: ()-> Unit,
     onConfirm: ()-> Unit,
     onAvatarChange: (id: Int, avatar: Int)-> Unit = {_,_->},
@@ -72,8 +71,8 @@ fun PlayerSelectionDialog(
 @Composable
 fun PlayerSelection(
     player: Player,
-    onNameChange: (id: Int, name: String) -> Unit,
-    onTurnSelect: (id: Int, turn: Char)-> Unit,
+    onNameChange: (id: String, name: String) -> Unit,
+    onTurnSelect: (id: String, turn: String)-> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -106,8 +105,8 @@ fun PlayerSelection(
                             .padding(10.dp),
                     )
                 },
-                onClick = { onTurnSelect(player.id, 'O') },
-                selected = player.turn == 'O'
+                onClick = { onTurnSelect(player.id, "O") },
+                selected = player.turn == "O"
             )
 
             SelectableIcon(
@@ -118,8 +117,8 @@ fun PlayerSelection(
                             .padding(12.dp)
                     )
                 },
-                onClick = { onTurnSelect(player.id, 'X') },
-                selected = player.turn == 'X'
+                onClick = { onTurnSelect(player.id, "X") },
+                selected = player.turn == "X"
             )
         }
     }
@@ -129,16 +128,16 @@ fun PlayerSelection(
 @Composable
 private fun PlayerSelectionDialogPreview() {
     val player1 = Player(
-        id = 1,
+        id = "1",
         name = "Player 1",
-        avatar = R.drawable.boy_avatar1,
-        turn = 'X'
+        avatar = R.drawable.boy_avatar_1,
+        turn = "X"
     )
     val player2 = Player(
-        id = 2,
+        id = "2",
         name = "Player 1",
         avatar = R.drawable.boy_avatar_2,
-        'O'
+        turn = "O"
     )
     TicTacProTheme {
         PlayerSelectionDialog(
