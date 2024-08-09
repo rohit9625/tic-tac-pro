@@ -1,3 +1,37 @@
 <resources>
     <string name="app_name">Tic Tac Pro</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_as_guest">Continue as Guest</string>
+    <string name="lets_go">Let\'s Go</string>
+    <string name="name">Name</string>
+    <string name="enter_your_name">Enter Your Name</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="choose_your_profile">Choose Your Profile</string>
+    <string name="done">Done</string>
+    <string name="play_online">Play Online</string>
+    <string name="play_offline">Play Offline</string>
+    <string name="hello_message">Hello, %s</string>
+    <string name="login">Login</string>
+    <string name="draw">Draw</string>
+    <string name="turn">Turn</string>
+    <string name="yours_turn">%s\'s Turn</string>
+    <string name="winner">Winner!</string>
+    <string name="player1">Player 1</string>
+    <string name="player2">Player 2</string>
+    <string name="waiting_for_other_player">Waiting for other player</string>
+    <string name="your_game_code">Your Game Code</string>
+    <string name="share">Share</string>
+    <string name="create_game">Create Game</string>
+    <string name="join_game">Join Game</string>
+    <string name="enter_game_code">Enter Game Code</string>
+    <string name="or">or</string>
+    <string name="score">Score: %d</string>
+    <string name="reset">Reset</string>
+    <string name="yes">Yes</string>
+    <string name="cancel">Cancel</string>
+    <string name="logout_confirmation">Do you want to logout?</string>
+    <string name="game_exit_confirmation">Do you want to exit the game?</string>
+    <string name="exit">Exit</string>
+    <string name="other_player_left">Other player had left the game</string>
 </resources>
