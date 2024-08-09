@@ -1,6 +1,8 @@
 package com.devx.tictacpro.domain.auth
 
-sealed interface NetworkError : Error{
+import com.devx.tictacpro.domain.Error
+
+sealed interface NetworkError : Error {
     enum class AuthError: NetworkError {
         INVALID_CREDENTIALS,
         WEAK_PASSWORD,
