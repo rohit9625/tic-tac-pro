@@ -38,9 +38,49 @@ class AuthRepositoryImpl(private val auth: FirebaseAuth): AuthRepository {
             return Result.Error(NetworkError.AuthError.EMPTY_FIELDS)
         }
 
-        return try {
+        return auth.currentUser?.let { user->
+            if(user.isAnonymous) {
+                val credential = EmailAuthProvider.getCredential(email, password)
+                auth.currentUser!!.linkWithCredential(credential).addOnCompleteListener { task->
+                    if(task.isSuccessful) {
+                        Log.d(Constants.TAG, "LinkWithCredential: success")
+                        CoroutineScope(Dispatchers.IO).launch {
+                            db.getReference("users").child(task.result.user!!.uid).setValue(
+                                User(
+                                    email = task.result.user!!.email!!,
+                                    name = userPrefs.getName().first(),
+                                    avatar = userPrefs.getAvatar().first()?.let {
+                                        resourceMapper.getResourceString(it)
+                                    }
+                                )
+                            )
+                            userPrefs.setIsNewUser(false)
+                            userPrefs.setIsGuestUser(false)
+                        }
+
+                        deferredResult.complete(Result.Success(Unit))
+                    } else {
+                        Log.e(Constants.TAG, "LinkWithCredential: failed", task.exception)
+                        if(task.exception is FirebaseAuthUserCollisionException) {
+                            deferredResult.complete(Result.Error(NetworkError.AuthError.USER_ALREADY_EXISTS))
+                        } else {
+                            deferredResult.complete(Result.Error(NetworkError.AuthError.SERVER_ERROR))
+                        }
+                    }
+                }
+            }
+            deferredResult.await()
+        } ?: try {
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnSuccessListener { result->
+                    db.getReference("users").child(result.user!!.uid).setValue(
+                        User(email = result.user!!.email!!)
+                    )
+                    CoroutineScope(Dispatchers.IO).launch {
+                        userPrefs.setIsNewUser(true)
+                        userPrefs.setIsGuestUser(false)
+                    }
+
                     Log.d(Constants.AUTH_TAG, "User signed-up with ${result.credential?.provider}")
                     deferredResult.complete(Result.Success(Unit))
                 }
