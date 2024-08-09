@@ -2,7 +2,7 @@ package com.devx.tictacpro
 
 import android.app.Application
 import com.devx.tictacpro.di.AppModule
-import com.google.firebase.FirebaseApp
+import com.devx.tictacpro.di.AppModuleImpl
 
 class TicTacProApp: Application() {
     companion object {
@@ -11,6 +11,6 @@ class TicTacProApp: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        appModule = AppModule
+        appModule = AppModuleImpl(this)
     }
 }
