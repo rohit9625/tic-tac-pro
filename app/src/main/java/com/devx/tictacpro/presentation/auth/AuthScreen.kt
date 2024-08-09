@@ -2,7 +2,6 @@ package com.devx.tictacpro.presentation.auth
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +15,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,13 +32,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.devx.tictacpro.R
-import com.devx.tictacpro.Route
 import com.devx.tictacpro.presentation.components.AuthTextField
 import com.devx.tictacpro.presentation.components.PasswordTextField
 import com.devx.tictacpro.presentation.components.TriangleShape
@@ -45,94 +42,96 @@ import com.devx.tictacpro.ui.theme.TicTacProTheme
 
 @Composable
 fun AuthScreen(
-    state: AuthState,
+    uiState: AuthState,
     onEvent: (AuthEvent)-> Unit,
-    navController: NavController
+    onSuccess: ()-> Unit
 ) {
-    Box(
-        modifier = Modifier.background(MaterialTheme.colorScheme.background)
-    ) {
-        Image(
-            painter = painterResource(R.drawable.bg_tic_tac_pro),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(TriangleShape()),
-            contentScale = ContentScale.Crop
-        )
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = stringResource(R.string.app_name).uppercase(),
-                modifier = Modifier.width(150.dp),
-                style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Bold),
-                textAlign = TextAlign.Center,
-                color = Color.White
+    Scaffold { innerPadding->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            Image(
+                painter = painterResource(R.drawable.bg_tic_tac_pro),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(TriangleShape()),
+                contentScale = ContentScale.Crop
             )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
             Column(
-                modifier = Modifier.padding(horizontal = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = state.error ?: "",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error
-                )
-                AuthTextField(
-                    value = state.email,
-                    onValueChange = { onEvent(AuthEvent.OnEmailChange(it)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = "Email",
-                    icon = R.drawable.ic_round_mail_24
+                    text = stringResource(R.string.app_name).uppercase(),
+                    modifier = Modifier.width(150.dp),
+                    style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Bold),
+                    textAlign = TextAlign.Center,
+                    color = Color.White
                 )
 
-                PasswordTextField(
-                    value = state.password,
-                    onValueChange = { onEvent(AuthEvent.OnPasswordChange(it)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = "Password"
-                )
+                Spacer(modifier = Modifier.height(32.dp))
 
-                Button(
-                    onClick = {
-                        onEvent(AuthEvent.OnSubmit { navController.navigate(Route.HomeScreen) })
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+                Column(
+                    modifier = Modifier.padding(horizontal = 32.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
                     Text(
-                        text = "Let's Go",
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                        text = uiState.error ?: "",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    AuthTextField(
+                        value = uiState.email,
+                        onValueChange = { onEvent(AuthEvent.OnEmailChange(it)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = stringResource(R.string.email),
+                        icon = R.drawable.ic_round_mail_24
+                    )
+
+                    PasswordTextField(
+                        value = uiState.password,
+                        onValueChange = { onEvent(AuthEvent.OnPasswordChange(it)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = stringResource(R.string.password)
+                    )
+
+                    Button(
+                        onClick = { onEvent(AuthEvent.OnSubmit(onSuccess)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        enabled = !uiState.isLoading,
+                        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+                    ) {
+                        if(uiState.isLoading) {
+                            CircularProgressIndicator()
+                        } else {
+                            Text(
+                                text = stringResource(R.string.lets_go),
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
+                    }
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = stringResource(R.string.or),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    AuthButton(
+                        icon = R.drawable.ic_person_24,
+                        text = stringResource(R.string.continue_as_guest),
+                        onClick = { if(!uiState.isLoading) onEvent(AuthEvent.OnGuestLogin(onSuccess)) },
+                        iconColor = MaterialTheme.colorScheme.onSurface
                     )
                 }
-            }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "or",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                AuthButton(
-                    icon = R.drawable.ic_person_24,
-                    text = "Continue as Guest",
-                    onClick = { if(!state.isLoading) onEvent(AuthEvent.OnGuestLogin) },
-                    iconColor = MaterialTheme.colorScheme.onSurface
-                )
             }
         }
     }
@@ -153,7 +152,7 @@ fun AuthButton(
     ) {
         Icon(
             painter = painterResource(icon),
-            contentDescription = "Continue with Google",
+            contentDescription = text,
             modifier = Modifier.size(28.dp),
             tint = iconColor
         )
@@ -167,15 +166,15 @@ fun AuthButton(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun AuthScreenPreview() {
     TicTacProTheme {
         Surface {
             AuthScreen(
-                state = AuthState(),
+                uiState = AuthState(),
                 onEvent = {},
-                navController = rememberNavController()
+                onSuccess = {}
             )
         }
     }
