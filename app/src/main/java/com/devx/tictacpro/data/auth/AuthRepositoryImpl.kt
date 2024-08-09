@@ -1,33 +1,52 @@
 package com.devx.tictacpro.data.auth
 
 import android.util.Log
+import com.devx.tictacpro.data.game.User
+import com.devx.tictacpro.domain.Result
 import com.devx.tictacpro.domain.auth.AuthRepository
 import com.devx.tictacpro.domain.auth.NetworkError
-import com.devx.tictacpro.domain.auth.Result
+import com.devx.tictacpro.domain.mapper.DrawableResourceMapper
+import com.devx.tictacpro.prefs.UserPrefs
 import com.devx.tictacpro.utils.Constants
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
-import com.google.firebase.auth.FirebaseAuthWebException
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
-class AuthRepositoryImpl(private val auth: FirebaseAuth): AuthRepository {
-    override fun loginAsGuest(): Result<Unit, NetworkError> {
+class AuthRepositoryImpl(
+    private val auth: FirebaseAuth,
+    private val db: FirebaseDatabase,
+    private val userPrefs: UserPrefs,
+    private val resourceMapper: DrawableResourceMapper
+): AuthRepository {
+    override suspend fun loginAsGuest(): Result<Unit, NetworkError> {
+        val deferredResult = CompletableDeferred<Result<Unit, NetworkError>>()
         return try {
-            auth.signInAnonymously()
-
-            Result.Success(Unit)
+            auth.signInAnonymously().addOnCompleteListener { task->
+                if(task.isSuccessful) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        userPrefs.setIsGuestUser(true)
+                        userPrefs.setIsNewUser(true)
+                    }
+                    deferredResult.complete(Result.Success(Unit))
+                } else {
+                    Log.e(Constants.AUTH_TAG, "Error login user anonymously", task.exception)
+                    deferredResult.complete(Result.Error(NetworkError.AuthError.SERVER_ERROR))
+                }
+            }
+            deferredResult.await()
         } catch (e: Exception) {
             Log.e(Constants.AUTH_TAG, "Error during anonymous sing-in", e)
-
-            when(e) {
-                is FirebaseAuthWebException -> Result.Error(NetworkError.AuthError.CONNECTION_ERROR)
-                is FirebaseTooManyRequestsException -> Result.Error(NetworkError.AuthError.TOO_MANY_REQUEST)
-                else -> Result.Error(NetworkError.AuthError.SERVER_ERROR)
-            }
+            Result.Error(NetworkError.AuthError.ERROR_UNKNOWN)
         }
     }
 
@@ -100,27 +119,42 @@ class AuthRepositoryImpl(private val auth: FirebaseAuth): AuthRepository {
 
             deferredResult.await()
         } catch (e: Exception) {
-            Log.e(Constants.AUTH_TAG, "Error signing-up user", e)
+            Log.e(Constants.AUTH_TAG, "Unknown error occurred while signing-up user", e)
             Result.Error(NetworkError.AuthError.ERROR_UNKNOWN)
         }
     }
 
-    override suspend fun signInWithEmailPassword(email: String, password: String): Result<Unit, NetworkError> {
-        val deferredResult = CompletableDeferred<Result<Unit, NetworkError>>()
+    override suspend fun signInWithEmailPassword(email: String, password: String): Result<User, NetworkError> {
+        val deferredResult = CompletableDeferred<Result<User, NetworkError>>()
 
         if(email.isBlank() || password.isBlank()) {
             return Result.Error(NetworkError.AuthError.EMPTY_FIELDS)
         }
-
         return try {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener { result->
+                    val userRef = db.getReference("users/${result.user!!.uid}")
+
+                    userRef.get().addOnSuccessListener { dataSnapshot->
+                        if(dataSnapshot.exists()) {
+                            val user = dataSnapshot.getValue(User::class.java) as User
+                            CoroutineScope(Dispatchers.IO).launch {
+                                userPrefs.setName(user.name!!)
+                                userPrefs.setAvatar(resourceMapper.getResourceId(user.avatar!!)!!)
+                                userPrefs.setIsNewUser(false)
+                                userPrefs.setIsGuestUser(false)
+                            }
+                            deferredResult.complete(Result.Success(user))
+                        }
+                    }.addOnFailureListener { e->
+                        Log.e(Constants.AUTH_TAG, "Error getting user information", e)
+                        deferredResult.complete(Result.Error(NetworkError.AuthError.ERROR_UNKNOWN))
+                    }
                     Log.d(Constants.AUTH_TAG, "User signed-in with ${result.credential?.provider}")
-                    deferredResult.complete(Result.Success(Unit))
                 }
                 .addOnFailureListener { e->
                     Log.e(Constants.AUTH_TAG, "Error signing-in user", e)
-                    val error: Result<Unit, NetworkError> = when(e) {
+                    val error: Result<User, NetworkError> = when(e) {
                         is FirebaseNetworkException -> Result.Error(NetworkError.AuthError.CONNECTION_ERROR)
                         is FirebaseAuthInvalidCredentialsException -> Result.Error(NetworkError.AuthError.INVALID_CREDENTIALS)
                         is FirebaseTooManyRequestsException -> Result.Error(NetworkError.AuthError.TOO_MANY_REQUEST)
@@ -132,7 +166,20 @@ class AuthRepositoryImpl(private val auth: FirebaseAuth): AuthRepository {
 
             deferredResult.await()
         } catch (e: Exception) {
-            Log.e(Constants.AUTH_TAG, "Error signing-in user", e)
+            Log.e(Constants.AUTH_TAG, "Unknown error occurred while signing-in user", e)
+            Result.Error(NetworkError.AuthError.ERROR_UNKNOWN)
+        }
+    }
+
+    override suspend fun updateProfile(name: String, avatar: String): Result<Unit, NetworkError> {
+        return try {
+            val ref = db.getReference("users/${auth.currentUser!!.uid}")
+            ref.child("name").setValue(name)
+            ref.child("avatar").setValue(avatar)
+
+            Result.Success(Unit)
+        } catch(e: Exception) {
+            Log.e(Constants.AUTH_TAG, "Error updating user profile", e)
             Result.Error(NetworkError.AuthError.ERROR_UNKNOWN)
         }
     }
