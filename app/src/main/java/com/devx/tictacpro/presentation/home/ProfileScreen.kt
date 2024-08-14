@@ -119,7 +119,7 @@ fun ProfileScreen(
                     }
                 }
 
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = { onEvent(ProfileEvent.OnSave) }) {
                     Text(text = "Save")
                 }
             }

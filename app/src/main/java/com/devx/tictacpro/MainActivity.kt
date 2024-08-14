@@ -109,7 +109,9 @@ fun TicTacProNav(
                             name = args.name,
                             email = args.email
                         ),
-                        userPrefs = TicTacProApp.appModule.userPrefs
+                        userPrefs = TicTacProApp.appModule.userPrefs,
+                        authRepository = TicTacProApp.appModule.authRepository,
+                        resourceMapper = TicTacProApp.appModule.drawableResourceMapper
                     )
                 }
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
