@@ -34,4 +34,5 @@
     <string name="game_exit_confirmation">Do you want to exit the game?</string>
     <string name="exit">Exit</string>
     <string name="other_player_left">Other player had left the game</string>
+    <string name="share_game_code_invitation">Let\'s Play Together!\nJoin the game by this code: %s</string>
 </resources>

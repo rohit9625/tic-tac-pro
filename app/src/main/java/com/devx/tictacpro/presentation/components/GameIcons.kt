@@ -1,5 +1,7 @@
 package com.devx.tictacpro.presentation.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
@@ -11,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +28,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.devx.tictacpro.ui.theme.TicTacProTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun SelectableIcon(
@@ -90,6 +94,66 @@ fun CircleIcon(
                 width = strokeWidth.toPx()
             ),
             radius = this.size.width/2f
+        )
+    }
+}
+
+@Composable
+fun AnimatedCross(
+    color: Color,
+    modifier: Modifier = Modifier,
+    animationDuration: Int = 500,
+    strokeWidth: Dp = 4.dp
+) {
+    val lineLength = remember { Animatable(0f) }
+    val line2Length = remember { Animatable(1f) }
+
+    LaunchedEffect(key1 = Unit) {
+        launch { lineLength.animateTo(1f, tween(animationDuration)) }
+        launch { line2Length.animateTo(0f, tween(animationDuration)) }
+    }
+    Canvas(modifier = modifier) {
+        drawLine(
+            color = color,
+            start = Offset(0f, 0f),
+            end = Offset(size.width, size.height) * lineLength.value,
+            strokeWidth = strokeWidth.toPx(),
+            cap = StrokeCap.Round
+        )
+        drawLine(
+            color = color,
+            start = Offset(size.width, 0f),
+            end = Offset(size.width * line2Length.value, size.height * lineLength.value),
+            strokeWidth = strokeWidth.toPx(),
+            cap = StrokeCap.Round
+        )
+    }
+}
+
+@Composable
+fun AnimatedCircle(
+    color: Color,
+    modifier: Modifier = Modifier,
+    animationDuration: Int = 500,
+    strokeWidth: Dp = 4.dp,
+) {
+    val sweepAngle = remember { Animatable(0f) }
+    LaunchedEffect(key1 = Unit) {
+        sweepAngle.animateTo(360f, tween(animationDuration))
+    }
+    Canvas(modifier = modifier) {
+        drawArc(
+            color = color,
+            startAngle = 0f,
+            sweepAngle = sweepAngle.value,
+            topLeft = Offset(
+                0f,0f
+            ),
+            useCenter = false,
+            size = this.size,
+            style = Stroke(
+                width = strokeWidth.toPx()
+            )
         )
     }
 }

@@ -11,8 +11,8 @@ data class OnlineGameState(
     val boardValues: String = "---------",
     val playerAtTurn: String = "X",
     val winner: String? = null,
-    val draws: Int = 0,
-    val showDialog: Boolean = false,
+    val winningLine: List<Int> = emptyList(),
+    val draws: Int = 0
 )
 
 fun OnlineGameState.toGameState() = GameState(
@@ -22,8 +22,8 @@ fun OnlineGameState.toGameState() = GameState(
     gameCode = gameCode,
     boardValues = boardValues.toBoardMap(),
     winner = winner,
-    draws = draws,
-    showDialog = showDialog
+    winningLine = winningLine,
+    draws = draws
 )
 
 fun GameState.toOnlineGameState() = OnlineGameState(
@@ -33,8 +33,8 @@ fun GameState.toOnlineGameState() = OnlineGameState(
     gameCode = gameCode,
     boardValues = boardValues.toBoardString(),
     winner = winner,
-    draws = draws,
-    showDialog = showDialog
+    winningLine = winningLine,
+    draws = draws
 )
 
 private fun Map<Int, String?>.toBoardString(): String {
