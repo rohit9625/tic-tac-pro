@@ -1,10 +1,13 @@
 package com.devx.tictacpro.presentation.game
 
+import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -12,6 +15,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,32 +36,35 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.devx.tictacpro.R
 import com.devx.tictacpro.presentation.Player
+import com.devx.tictacpro.presentation.components.AnimatedCircle
+import com.devx.tictacpro.presentation.components.AnimatedCross
 import com.devx.tictacpro.presentation.components.CircleIcon
 import com.devx.tictacpro.presentation.components.ConfirmationDialog
 import com.devx.tictacpro.presentation.components.CrossIcon
 import com.devx.tictacpro.presentation.components.GameCodeDialog
 import com.devx.tictacpro.presentation.components.PlayerAvatar
-import com.devx.tictacpro.presentation.components.ResultDialog
 import com.devx.tictacpro.ui.theme.TicTacProTheme
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 @Composable
 fun GameScreen(
@@ -70,13 +77,14 @@ fun GameScreen(
     var isBackPressedTwice by remember { mutableStateOf(false) }
     var showGameCodeDialog by remember { mutableStateOf(true) }
     val context = LocalContext.current
+
     BackHandler {
         if(isBackPressedTwice) {
             showExitConfirmation = true
             return@BackHandler
         }
         isBackPressedTwice = true
-        Toast.makeText(context, "Press Back again to exit the game", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Press Back again to exit", Toast.LENGTH_SHORT).show()
         Handler(Looper.getMainLooper()).postDelayed({ isBackPressedTwice = false }, 2000)
     }
 
@@ -86,6 +94,24 @@ fun GameScreen(
             onDismiss = { showExitConfirmation = false },
             onConfirm = {
                 showExitConfirmation = false
+                onNavigateBack()
+            }
+        )
+    }
+    if(gameState.gameCode != null && showGameCodeDialog) {
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, stringResource(R.string.share_game_code_invitation, gameState.gameCode))
+            type = "text/plain"
+        }
+        val shareIntent = Intent.createChooser(sendIntent, null)
+        val dialogContext = LocalContext.current
+
+        GameCodeDialog(
+            gameCode = gameState.gameCode,
+            onAction = { dialogContext.startActivity(shareIntent)},
+            onDismissAction = {
+                showGameCodeDialog = false
                 onNavigateBack()
             }
         )
@@ -134,28 +160,39 @@ fun GameScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if(gameState.player1 != null && gameState.player2 != null) {
-                    Text(
-                        text = stringResource(R.string.yours_turn,
-                            if(gameState.playerAtTurn == gameState.player1.turn) gameState.player1.name
-                            else gameState.player2.name
-                        ),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                when {
+                    gameState.isBoardFull && gameState.winner == null -> DrawIndicator()
+                    gameState.winner != null -> WinnerIndicator(
+                        avatar = if (gameState.winner == gameState.player1?.turn)
+                            gameState.player1.avatar
+                        else gameState.player2!!.avatar
                     )
-                } else {
-                    Text(
-                        text = stringResource(R.string.other_player_left),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
+
+                    else -> {
+                        if(gameState.player1 != null && gameState.player2 != null) {
+                            Text(
+                                text = stringResource(R.string.yours_turn,
+                                    if(gameState.playerAtTurn == gameState.player1.turn) gameState.player1.name
+                                    else gameState.player2.name
+                                ),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else if(gameState.gameCode == null) {
+                            Text(
+                                text = stringResource(R.string.other_player_left),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        TurnIndicator(
+                            turn = gameState.playerAtTurn,
+                            strokeWidth = 8.dp,
+                            innerPadding = 16.dp,
+                            borderWidth = 2.dp
+                        )
+                    }
                 }
-                TurnIndicator(
-                    turn = gameState.playerAtTurn,
-                    strokeWidth = 8.dp,
-                    innerPadding = 16.dp,
-                    borderWidth = 2.dp
-                )
             }
 
             TicTacToeField(
@@ -175,55 +212,74 @@ fun GameScreen(
                 onClick = { onEvent(GameEvent.ResetGame) },
                 modifier = Modifier.padding(16.dp)
             ) {
-                Text(text = stringResource(R.string.reset))
+                Text(
+                    text = stringResource(R.string.reset),
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
         }
     }
+}
 
-    if(gameState.gameCode != null && showGameCodeDialog) {
-        GameCodeDialog(
-            gameCode = gameState.gameCode,
-            onAction = {},
-            onDismissAction = {
-                showGameCodeDialog = false
-                onNavigateBack()
-            }
+fun Modifier.popupAnimation() = composed {
+    val scaling = remember { Animatable(0f) }
+    LaunchedEffect(key1 = Unit) {
+        scaling.animateTo(
+            targetValue = 1f,
+             animationSpec = spring(
+                 dampingRatio = Spring.DampingRatioMediumBouncy,
+                 stiffness = Spring.StiffnessLow
+             )
         )
     }
+    scale(scaling.value)
+}
 
-    if(gameState.winner != null && gameState.showDialog) {
-        ResultDialog(
-            icon = {
-                PlayerAvatar(
-                    image = if(gameState.winner == gameState.player1?.turn)
-                                gameState.player1.avatar
-                            else gameState.player2!!.avatar,
-                    contentDescription = null,
-                    size = 64.dp
-                )
-            },
-            message = stringResource(R.string.winner),
-            supportingText = if(gameState.winner == gameState.player1?.turn)
-                                gameState.player1.name
-                            else gameState.player2?.name,
-            onDismiss = { onEvent(GameEvent.DismissDialog) },
-            onConfirm = { onEvent(GameEvent.ResetGame) }
+@Composable
+fun WinnerIndicator(
+    avatar: Int,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.winner),
+            modifier = Modifier.popupAnimation(),
+            style = MaterialTheme.typography.titleLarge
+        )
+        PlayerAvatar(
+            image = avatar,
+            contentDescription = null,
+            modifier = Modifier
+                .size(64.dp)
+                .popupAnimation()
         )
     }
+}
 
-    if(gameState.isBoardFull && gameState.winner == null) {
-        ResultDialog(
-            icon = {
-                Image(
-                    painter = painterResource(R.drawable.ic_handshake),
-                    contentDescription = null,
-                    modifier = Modifier.size(72.dp)
-                )
-            },
-            message = stringResource(R.string.draw),
-            supportingText = "It's a",
-            onDismiss = { onEvent(GameEvent.DismissDialog) },
-            onConfirm = { onEvent(GameEvent.ResetGame) }
+@Composable
+fun DrawIndicator(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.draw),
+            modifier = Modifier.popupAnimation(),
+            style = MaterialTheme.typography.titleLarge
+        )
+        Image(
+            painter = painterResource(R.drawable.ic_handshake),
+            contentDescription = null,
+            modifier = Modifier
+                .size(64.dp)
+                .popupAnimation()
         )
     }
 }
@@ -303,25 +359,33 @@ fun TicTacToeField(
     playerOColor: Color = Color.Magenta
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val winningPoints = remember {
-        mutableStateListOf<Dp>()
+    var boardSize by remember { mutableStateOf(IntSize.Zero) }
+    val winningLine = remember { mutableStateOf<Pair<Offset, Offset>?>(null) }
+
+    LaunchedEffect(state.winner) {
+        if(state.winner != null) {
+            winningLine.value = calculateWinningLine(
+                state.winningLine, boardSize.width.toFloat(), boardSize.height.toFloat()
+            )
+        } else {
+            winningLine.value = null
+        }
     }
 
     BoxWithConstraints(modifier = modifier
         .aspectRatio(1f)
         .size(350.dp)
+        .onSizeChanged { boardSize = it }
     ) {
         GameBoard(
-            strokeWidth = 8.dp,
+            strokeWidth = 6.dp,
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3)
-        ) {
+        LazyVerticalGrid(columns = GridCells.Fixed(3)) {
             items(state.boardValues.size) { pos->
-                BoxWithConstraints(
+                Box(
                     modifier = Modifier
                         .size(maxWidth / 3)
                         .clickable(interactionSource, indication = null) {
@@ -329,17 +393,13 @@ fun TicTacToeField(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    for(i in 0..2) {
-                        winningPoints.add(maxWidth/2)
-                    }
-
                     if (state.boardValues[pos] == "X") {
                         AnimatedCross(
                             color = playerXColor,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(32.dp),
-                            strokeWidth = 8.dp
+                            strokeWidth = 6.dp
                         )
                     } else if(state.boardValues[pos] == "O") {
                         AnimatedCircle(
@@ -347,11 +407,20 @@ fun TicTacToeField(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(32.dp),
-                            strokeWidth = 8.dp
+                            strokeWidth = 6.dp
                         )
                     }
                 }
             }
+        }
+
+        winningLine.value?.let { line->
+            AnimatedWinningLine(
+                start = line.first,
+                end = line.second,
+                color = MaterialTheme.colorScheme.onSurface,
+                strokeWidth =  6.dp
+            )
         }
     }
 }
@@ -400,63 +469,65 @@ fun GameBoard(
 }
 
 @Composable
-fun AnimatedCross(
+fun AnimatedWinningLine(
+    start: Offset,
+    end: Offset,
     color: Color,
-    modifier: Modifier = Modifier,
-    animationDuration: Int = 500,
-    strokeWidth: Dp = 4.dp
+    strokeWidth: Dp
 ) {
     val lineLength = remember { Animatable(0f) }
-    val line2Length = remember { Animatable(1f) }
-
     LaunchedEffect(key1 = Unit) {
-        launch { lineLength.animateTo(1f, tween(animationDuration)) }
-        launch { line2Length.animateTo(0f, tween(animationDuration)) }
+        delay(100)
+        lineLength.animateTo(targetValue = 1f, animationSpec = tween(500))
     }
-    Canvas(modifier = modifier) {
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
         drawLine(
             color = color,
-            start = Offset(0f, 0f),
-            end = Offset(size.width, size.height) * lineLength.value,
-            strokeWidth = strokeWidth.toPx(),
-            cap = StrokeCap.Round
-        )
-        drawLine(
-            color = color,
-            start = Offset(size.width, 0f),
-            end = Offset(size.width * line2Length.value, size.height * lineLength.value),
+            start = start,
+            end = Offset(
+                start.x + (end.x - start.x) * lineLength.value,
+                start.y + (end.y - start.y) * lineLength.value
+            ),
             strokeWidth = strokeWidth.toPx(),
             cap = StrokeCap.Round
         )
     }
 }
 
-@Composable
-fun AnimatedCircle(
-    color: Color,
-    modifier: Modifier = Modifier,
-    animationDuration: Int = 500,
-    strokeWidth: Dp = 4.dp,
-) {
-    val sweepAngle = remember { Animatable(0f) }
-    LaunchedEffect(key1 = Unit) {
-        sweepAngle.animateTo(360f, tween(animationDuration))
+private fun calculateWinningLine(
+    winningCombination: List<Int>?,
+    width: Float, height: Float
+): Pair<Offset, Offset>? {
+    if(winningCombination == null) return null
+
+    val (a, b, c) = winningCombination
+    val start = when (a) {
+        0 -> Offset(width / 6, height / 6) // Top-left corner
+        1 -> Offset(width / 2, height / 6) // Top-center
+        2 -> Offset(width * 5 / 6, height / 6) // Top-right corner
+        3 -> Offset(width / 6, height / 2) // Middle-left
+        4 -> Offset(width / 2, height / 2) // Center
+        5 -> Offset(width * 5 / 6, height / 2) // Middle-right
+        6 -> Offset(width / 6,height * 5 / 6) // Bottom-left
+        7 -> Offset(width / 2, height * 5 / 6) // Bottom-center
+        8 -> Offset(width * 5 / 6, height * 5 / 6) // Bottom-right
+        else -> Offset.Zero
     }
-    Canvas(modifier = modifier) {
-        drawArc(
-            color = color,
-            startAngle = 0f,
-            sweepAngle = sweepAngle.value,
-            topLeft = Offset(
-                0f,0f
-            ),
-            useCenter = false,
-            size = this.size,
-            style = Stroke(
-                width = strokeWidth.toPx()
-            )
-        )
+    val end = when (c) {
+        0 -> Offset(0f, 0f) // Top-left corner
+        1 -> Offset(width / 2, height / 6) // Top-center
+        2 -> Offset(width * 5 / 6, height / 6) // Top-right corner
+        3 -> Offset(width / 6, height / 2) // Middle-left
+        4 -> Offset(width / 2, height / 2) // Center
+        5 -> Offset(width * 5 / 6, height / 2) // Middle-right
+        6 -> Offset(width / 6, height * 5 / 6) // Bottom-left
+        7 -> Offset(width / 2, height * 5 / 6) // Bottom-center
+        8-> Offset(width * 5 / 6, height * 5 / 6) // Bottom-right
+        else -> Offset.Zero
     }
+
+    return start to end
 }
 
 @PreviewLightDark

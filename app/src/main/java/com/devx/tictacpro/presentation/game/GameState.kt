@@ -12,8 +12,8 @@ data class GameState(
     val playerAtTurn: String = "X",
     val boardValues: MutableMap<Int, String?> = emptyField(),
     val winner: String? = null,
-    var draws: Int = 0,
-    val showDialog: Boolean = false
+    val winningLine: List<Int> = emptyList(),
+    var draws: Int = 0
 ) {
     val isBoardFull: Boolean
         get() = boardValues.values.all { it != null }
@@ -21,15 +21,9 @@ data class GameState(
     companion object {
         fun emptyField(): MutableMap<Int, String?> {
             return mutableStateMapOf(
-                0 to null,
-                1 to null,
-                2 to null,
-                3 to null,
-                4 to null,
-                5 to null,
-                6 to null,
-                7 to null,
-                8 to null
+                0 to null, 1 to null, 2 to null,
+                3 to null, 4 to null, 5 to null,
+                6 to null, 7 to null, 8 to null
             )
         }
     }

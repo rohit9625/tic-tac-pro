@@ -21,7 +21,6 @@ class GameViewModel(
         player1 = player1, player2 = player2
     ))
     val gameState = _gameState.asStateFlow()
-    private var board = _gameState.value.boardValues
 
     init {
         if(isOnlineGame) {
@@ -31,10 +30,7 @@ class GameViewModel(
                         is Result.Error -> {
                             Log.e(Constants.TAG, "Error occurred while creating game, message: ${result.error.name}")
                         }
-                        is Result.Success -> {
-                            Log.d(Constants.TAG, "GameState: ${result.data}")
-                            _gameState.value = result.data
-                        }
+                        is Result.Success -> _gameState.value = result.data
                         Result.Loading -> {
                             Log.d(Constants.TAG, "Game Screen Initialized")
                         }
@@ -48,7 +44,6 @@ class GameViewModel(
         when(e) {
             is GameEvent.UpdateGame -> updateGame(e.position)
             GameEvent.ResetGame -> resetBoard()
-            GameEvent.DismissDialog -> { _gameState.update { it.copy(showDialog = false) } }
         }
         if(isOnlineGame) {
             viewModelScope.launch { gameRepository.updateGame(_gameState.value) }
@@ -67,54 +62,49 @@ class GameViewModel(
 
             val winner = checkWinner(updatedBoard)
 
-            val updatedPlayer1 = if (winner == gameState.player1!!.turn) {
-                gameState.player1.copy(score = gameState.player1.score + 1)} else {
+            val updatedPlayer1 = if(winner?.first == gameState.player1!!.turn)
+                gameState.player1.copy(score = gameState.player1.score + 1)
+            else
                 gameState.player1
-            }
 
-            val updatedPlayer2 = if (winner == gameState.player2?.turn) {
-                gameState.player2?.copy(score = gameState.player2.score + 1)
-            } else {
+            val updatedPlayer2 = if(winner?.first == gameState.player2!!.turn)
+                gameState.player2.copy(score = gameState.player2.score + 1)
+            else
                 gameState.player2
-            }
 
-            val updatedDraws = if (checkDraw(updatedBoard, winner)) gameState.draws + 1 else gameState.draws
+            val updatedDraws = if (checkDraw(updatedBoard, winner?.first)) gameState.draws + 1 else gameState.draws
 
             gameState.copy(
                 boardValues = updatedBoard,
                 playerAtTurn = if (playerAtTurn == "X") "O" else "X",
-                winner = winner,
+                winner = winner?.first,
+                winningLine = winner?.second ?: emptyList(),
                 player1 = updatedPlayer1,
                 player2 = updatedPlayer2,
-                draws = updatedDraws,
-                showDialog = winner != null
+                draws = updatedDraws
             )
         }
     }
 
-    private fun checkWinner(board: Map<Int, String?>): String? {
-        return when {
-            // Corner Cases
-            board[0] != null && board[0] == board[1] && board[1] == board[2] -> board[0]
-            board[2] != null && board[2] == board[5] && board[5] == board[8] -> board[2]
-            board[6] != null && board[6] == board[7] && board[7] == board[8] -> board[6]
-            board[0] != null && board[0] == board[3] && board[3] == board[6] -> board[0]
+    private fun checkWinner(board: Map<Int, String?>): Pair<String, List<Int>>? {
+        val winningCombinations = listOf(
+            listOf(0, 1, 2), listOf(2, 5, 8), listOf(6, 7, 8),
+            listOf(0, 3, 6), listOf(0, 4, 8), listOf(2, 4, 6),
+            listOf(1, 4, 7), listOf(3, 4, 5)
+        )
 
-            // Diagonal Cases
-            board[0] != null && board[0] == board[4] && board[4] == board[8] -> board[0]
-            board[2] != null && board[2] == board[4] && board[4] == board[6] -> board[2]
-
-            // Middle Cases
-            board[1] != null && board[1] == board[4] && board[4] == board[7] -> board[1]
-            board[3] != null && board[3] == board[4] && board[4] == board[5] -> board[3]
-
-            else -> null
+        for(combination in winningCombinations) {
+            val (a, b, c) = combination
+            if(board[a] != null && board[a] == board[b] && board[b] == board[c]) {
+                return board[a]!! to combination
+            }
         }
+
+        return null
     }
 
     private fun resetBoard() {
-        board = GameState.emptyField()
-        _gameState.update { it.copy(boardValues = board, winner = null) }
+        _gameState.update { it.copy(boardValues = GameState.emptyField(), winner = null) }
     }
 
     private fun checkDraw(board: Map<Int, String?>, winner: String?): Boolean {
