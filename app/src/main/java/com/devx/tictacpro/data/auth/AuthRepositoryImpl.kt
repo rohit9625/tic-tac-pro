@@ -80,10 +80,17 @@ class AuthRepositoryImpl(
                         deferredResult.complete(Result.Success(Unit))
                     } else {
                         Log.e(Constants.TAG, "LinkWithCredential: failed", task.exception)
-                        if(task.exception is FirebaseAuthUserCollisionException) {
-                            deferredResult.complete(Result.Error(NetworkError.AuthError.USER_ALREADY_EXISTS))
-                        } else {
-                            deferredResult.complete(Result.Error(NetworkError.AuthError.SERVER_ERROR))
+                        when(task.exception) {
+                            is FirebaseAuthWeakPasswordException -> {
+                                deferredResult.complete(Result.Error(NetworkError.AuthError.WEAK_PASSWORD))
+                            }
+                            is FirebaseAuthInvalidCredentialsException -> {
+                                deferredResult.complete(Result.Error(NetworkError.AuthError.INVALID_CREDENTIALS))
+                            }
+                            is FirebaseAuthUserCollisionException -> {
+                                deferredResult.complete(Result.Error(NetworkError.AuthError.USER_ALREADY_EXISTS))
+                            }
+                            else -> deferredResult.complete(Result.Error(NetworkError.AuthError.SERVER_ERROR))
                         }
                     }
                 }
