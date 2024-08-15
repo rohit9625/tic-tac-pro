@@ -1,13 +1,14 @@
-# Tic Tac Pro: *Multiplayer Game*
+## Tic Tac Pro : *Multiplayer Game*
 
 <p align="center">
-  <img src="./screenshots/login_screen.png" width="200px"">
-  <img src="./screenshots/home_screen.png" width="200px"">
-  <img src="./screenshots/profile_screen.png" width="200px"">
-  <img src="./screenshots/play_offline_game.png" width="200px"">
-  <img src="./screenshots/play_online_game.png" width="200px"">
-  <img src="./screenshots/share_game_code.png" width="200px"">
-  <img src="./screenshots/game_screen.png" width="200px">
+  <img src="./screenshots/login_screen.png" width="175px"">
+  <img src="./screenshots/complete_profile.png" width="175px"">
+  <img src="./screenshots/home_screen.png" width="175px"">
+  <img src="./screenshots/profile_screen.png" width="175px"">
+  <img src="./screenshots/play_offline_game.png" width="175px"">
+  <img src="./screenshots/play_online_game.png" width="175px"">
+  <img src="./screenshots/share_game_code.png" width="175px"">
+  <img src="./screenshots/game_screen.png" width="175px">
 </p>
 
 ## Overview
@@ -20,34 +21,38 @@
 - **Guest Mode:** Play without the need to sign up.
 - **Real-time Indicators:** Track your turn, wins, and draws.
 
-## Screenshots
-
-1. **Login Screen**  
-   - Sign in with your email or as a guest.
-   - Automatic registration for new users.
-
-2. **Home Screen**
-    - Customize your profile after logging in.
-    - Play offline directly or create/join an online game.
-
-3. **Gameplay Screen**  
-   - **Online Play:** Wait for an opponent, then take turns marking the board.
-   - **Offline Play:** Enter player names, choose turns, and start the game.
-
-4. **Profile Screen**
-   - Accessible via the avatar icon on the Home Screen.
-   - Edit your avatar and display name.
-
 ## Getting Started
 
 ### Prerequisites
 - Android Studio (latest version)
 - Kotlin
-- Minimum SDK level: [Your SDK version]
-- Gradle (latest version)
+- Minimum SDK level: 26
+- Gradle (8.4+)
+- Firebase Account
 
 ### Setup Instructions
 
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/your-username/tic-tac-pro.git
+   
+2. **Open Project in Android Studio**
+   - Launch Android Studio
+   - Select "Open an existing project"
+   - Navigate to the cloned repository folder and open it
+     
+3. **Create Firebase Project**
+   - Go to your [firebase console](https://console.firebase.google.com) and create a project
+   - Enter the desired name of the project and follow further instructions carefully
+   - This step is important and must be completed before running the app locally
+    
+4. **Place Config File**
+   - If you created the project, you must get a **google-config.json** file
+   - Place it in the app directory and start building your project
+
+5. **Finally, Run Application**
+   - You can run the application on an Emulator or a Physical Device
+   - If you encounter any problem then feel free to ask
+
+## 🔗 Connect Here
+[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/rohit0111/)
