@@ -3,6 +3,7 @@ package com.devx.tictacpro.presentation.components
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,6 +52,7 @@ fun AuthTextField(
                 )
             }
         },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         singleLine = true
     )
@@ -61,6 +63,7 @@ fun PasswordTextField(
     value: String,
     onValueChange: (String)-> Unit,
     modifier: Modifier = Modifier,
+    keyboardActions: KeyboardActions = KeyboardActions(),
     label: String? = null,
 ) {
     var isPasswordVisible by remember { mutableStateOf(false) }
@@ -88,6 +91,7 @@ fun PasswordTextField(
         visualTransformation = if(isPasswordVisible) VisualTransformation.None
                                 else PasswordVisualTransformation(),
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        keyboardActions = keyboardActions,
         singleLine = true
     )
 }
