@@ -26,7 +26,7 @@
 ### Prerequisites
 - Android Studio (latest version)
 - Kotlin
-- Minimum SDK level: 26
+- Minimum SDK level: 26(Oreo)
 - Gradle (8.4+)
 - Firebase Account
 
@@ -34,7 +34,7 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/tic-tac-pro.git
+   git clone https://github.com/rohit9625/tic-tac-pro.git
    
 2. **Open Project in Android Studio**
    - Launch Android Studio
