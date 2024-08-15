@@ -89,6 +89,7 @@ fun AvatarSelectionDialog(
     avatars: List<Int>,
     onAvatarSelect: (Int)-> Unit,
     selectedAvatar: Int? = null,
+    error: String? = null,
     onDone: ()-> Unit
 ) {
     Dialog(
@@ -107,7 +108,7 @@ fun AvatarSelectionDialog(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = stringResource(R.string.choose_your_profile),
+                text = stringResource(R.string.complete_your_profile),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -117,19 +118,28 @@ fun AvatarSelectionDialog(
                 selectedAvatar = selectedAvatar,
                 avatarSize = 54.dp
             )
-            OutlinedTextField(
-                value = name,
-                onValueChange = onNameChange,
-                modifier = Modifier.height(52.dp),
-                textStyle = MaterialTheme.typography.bodyMedium,
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.enter_your_name),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                },
-                shape = RoundedCornerShape(12.dp)
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = onNameChange,
+                    modifier = Modifier.height(50.dp),
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    singleLine = true,
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.enter_your_name),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                )
+                Text(
+                    text = error ?: "",
+                    modifier = Modifier.align(Alignment.End),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
             Button(onClick = onDone) {
                 Text(text = stringResource(R.string.done))
@@ -260,7 +270,8 @@ private fun AvatarSelectionDialogPreview() {
             onNameChange = { name = it },
             avatars = HomeState().availableAvatars,
             onAvatarSelect = { avatar = it },
-            onDone = {}
+            onDone = {},
+            error = "Enter your name and select avatar"
         )
     }
 }

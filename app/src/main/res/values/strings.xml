@@ -7,7 +7,7 @@
     <string name="enter_your_name">Enter Your Name</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
-    <string name="choose_your_profile">Choose Your Profile</string>
+    <string name="complete_your_profile">Complete Your Profile</string>
     <string name="done">Done</string>
     <string name="play_online">Play Online</string>
     <string name="play_offline">Play Offline</string>
@@ -34,5 +34,6 @@
     <string name="game_exit_confirmation">Do you want to exit the game?</string>
     <string name="exit">Exit</string>
     <string name="other_player_left">Other player had left the game</string>
+    <string name="avatar_selection_error">Select avatar and enter your name</string>
     <string name="share_game_code_invitation">Let\'s Play Together!\nJoin the game by this code: %s</string>
 </resources>

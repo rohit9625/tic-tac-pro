@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,8 +67,8 @@ fun HomeScreen(
     val snackHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     /** This will be used for avatar selection dialog only **/
-    var name by remember { mutableStateOf("") }
-    var avatar: Int? by remember { mutableStateOf(null) }
+    var name by rememberSaveable { mutableStateOf("") }
+    var avatar: Int? by rememberSaveable { mutableStateOf(null) }
     var showLogoutConfirmation by remember { mutableStateOf(false) }
 
     with(sharedTransitionScope) {
@@ -199,13 +200,20 @@ fun HomeScreen(
         )
     }
     if(uiState.showAvatarSelectionDialog) {
+        var isError by remember { mutableStateOf(false) }
         AvatarSelectionDialog(
             name = name,
             onNameChange = { name = it },
             avatars = uiState.availableAvatars,
             selectedAvatar = avatar,
             onAvatarSelect = { avatar = it },
-            onDone = { onEvent(HomeEvent.OnSaveUserPref(name, avatar!!)) }
+            onDone = {
+                isError = name.isBlank() || avatar == null
+                if(!isError){
+                    onEvent(HomeEvent.OnSaveUserPref(name, avatar!!))
+                }
+            },
+            error = if(isError) stringResource(R.string.avatar_selection_error) else null
         )
     }
     if(uiState.playOnlineState.isSheetVisible) {
