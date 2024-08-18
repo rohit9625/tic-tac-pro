@@ -28,12 +28,28 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
 
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v4.3.6
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: tictacpro.apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+        tag_name: v${{ github.run_number }}
+        release_name: Release v${{ github.run_number }}
+        draft: true
+        prerelease: true
+
+    - name: Upload Release APK
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: app/build/outputs/apk/release/app/app-release.apk
+        asset_name: tic-tac-pro.apk
+        asset_content_type: application/vnd.android.package-archive
     
