@@ -2,4 +2,11 @@
 <resources>
 
     <style name="Theme.TicTacPro" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.AnimatedSplash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/app_splash_animation</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="postSplashScreenTheme">@style/Theme.TicTacPro</item>
+    </style>
 </resources>
