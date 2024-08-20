@@ -6,6 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -56,7 +60,14 @@ fun TicTacProNav(
 
     SharedTransitionLayout {
         NavHost(navController = navController, startDestination = startDest) {
-            composable<Route.AuthScreen> {
+            composable<Route.AuthScreen>(
+                enterTransition = {
+                    slideInHorizontally(initialOffsetX = { it })
+                },
+                exitTransition = {
+                    slideOutHorizontally(targetOffsetX = { -it })
+                }
+            ) {
                 val viewModel = viewModel<AuthViewModel> {
                     AuthViewModel(
                         TicTacProApp.appModule.userPrefs,
@@ -74,7 +85,7 @@ fun TicTacProNav(
                 )
             }
 
-            composable<Route.HomeScreen> {
+            composable<Route.HomeScreen>{
                 val viewModel = viewModel<HomeViewModel>{
                     HomeViewModel(
                         TicTacProApp.appModule.userPrefs,
@@ -126,7 +137,15 @@ fun TicTacProNav(
                 )
             }
 
-            composable<Route.Game>(typeMap = mapOf(typeOf<Player?>() to PlayerNavType)) {
+            composable<Route.Game>(
+                typeMap = mapOf(typeOf<Player?>() to PlayerNavType),
+                enterTransition = {
+                    slideInHorizontally(initialOffsetX = { it })
+                },
+                exitTransition = {
+                    slideOutHorizontally(targetOffsetX = { it })
+                }
+            ) {
                 val args = it.toRoute<Route.Game>()
                 val viewModel = viewModel<GameViewModel> {
                     GameViewModel(
@@ -141,6 +160,7 @@ fun TicTacProNav(
                     gameState = gameState,
                     onEvent = viewModel::onEvent,
                     onNavigateBack = { navController.navigateUp() },
+                    isOnlineGame = args.isOnlineGame,
                     myTurn = args.myTurn
                 )
             }

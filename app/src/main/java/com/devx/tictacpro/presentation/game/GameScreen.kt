@@ -69,6 +69,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun GameScreen(
     gameState: GameState,
+    isOnlineGame: Boolean,
     onEvent: (GameEvent)-> Unit,
     onNavigateBack: ()-> Unit = {},
     myTurn: String? = null
@@ -195,18 +196,20 @@ fun GameScreen(
                 }
             }
 
-            TicTacToeField(
-                state = gameState,
-                onTap = { pos->
-                    if(gameState.winner == null) {
-                        myTurn?.let {
-                            if(it == gameState.playerAtTurn) onEvent(GameEvent.UpdateGame(pos))
-                        } ?: onEvent(GameEvent.UpdateGame(pos))
-                    }
-                },
-                modifier = Modifier
-                    .padding(32.dp)
-            )
+            if((isOnlineGame && gameState.gameCode == null) || !isOnlineGame) {
+                TicTacToeField(
+                    state = gameState,
+                    onTap = { pos->
+                        if(gameState.winner == null) {
+                            myTurn?.let {
+                                if(it == gameState.playerAtTurn) onEvent(GameEvent.UpdateGame(pos))
+                            } ?: onEvent(GameEvent.UpdateGame(pos))
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(32.dp)
+                )
+            }
 
             Button(
                 onClick = { onEvent(GameEvent.ResetGame) },
@@ -434,6 +437,7 @@ fun GameBoard(
 ) {
     val lineLength = remember { Animatable(0f) }
     LaunchedEffect(key1 = Unit) {
+        delay(300)
         lineLength.animateTo(targetValue = 1f, animationSpec = tween(animationDuration))
     }
     Canvas(modifier = modifier) {
@@ -549,6 +553,7 @@ private fun GameScreenPreview() {
                     avatar = R.drawable.boy_avatar_2
                 )
             ),
+            isOnlineGame = false,
             onEvent = {}
         )
     }
